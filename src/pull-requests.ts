@@ -203,6 +203,6 @@ export async function getPullRequestFiles({
     additions: file.additions,
     deletions: file.deletions,
     changes: file.changes,
-    patch: file.patch,
+    ...(file.patch && { patch: file.patch }),
   }));
 }
