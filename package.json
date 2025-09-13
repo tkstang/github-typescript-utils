@@ -1,0 +1,69 @@
+{
+  "name": "github-typescript-utils",
+  "version": "0.1.0",
+  "description": "Utility functions for GitHub REST API interactions with github-typescript",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "github-actions",
+    "typescript",
+    "github-api",
+    "utilities",
+    "rest-api",
+    "octokit"
+  ],
+  "author": "tkstang",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tkstang/github-typescript-utils.git"
+  },
+  "homepage": "https://github.com/tkstang/github-typescript-utils#readme",
+  "bugs": {
+    "url": "https://github.com/tkstang/github-typescript-utils/issues"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "dev": "tsc --watch",
+    "lint": "biome lint src/",
+    "lint:fix": "biome lint --write src/",
+    "format": "biome format src/",
+    "format:fix": "biome format --write src/",
+    "check": "biome check src/",
+    "check:fix": "biome check --write src/",
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "pnpm run clean && pnpm run build"
+  },
+  "peerDependencies": {
+    "@actions/core": "^1.10.0",
+    "@actions/github": "^6.0.0"
+  },
+  "devDependencies": {
+    "@actions/core": "^1.10.1",
+    "@actions/github": "^6.0.0",
+    "@biomejs/biome": "^2.1.1",
+    "@types/node": "^22.17.0",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "pnpm@10.13.1",
+  "engines": {
+    "node": ">=22.17.0",
+    "pnpm": ">=10.13.1"
+  }
+}
