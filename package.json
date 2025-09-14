@@ -1,6 +1,6 @@
 {
   "name": "github-typescript-utils",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Utility functions for GitHub REST API interactions with github-typescript",
   "type": "module",
   "main": "./dist/index.js",
@@ -41,6 +41,9 @@
     "build:watch": "tsc --watch",
     "clean": "rm -rf dist",
     "dev": "tsc --watch",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "lint": "biome lint src/",
     "lint:fix": "biome lint --write src/",
     "format": "biome format src/",
@@ -48,7 +51,7 @@
     "check": "biome check src/",
     "check:fix": "biome check --write src/",
     "type-check": "tsc --noEmit",
-    "prepublishOnly": "pnpm run clean && pnpm run build"
+    "prepublishOnly": "pnpm run clean && pnpm run test:run && pnpm run build"
   },
   "peerDependencies": {
     "@actions/core": "^1.10.0",
@@ -59,7 +62,9 @@
     "@actions/github": "^6.0.0",
     "@biomejs/biome": "^2.1.1",
     "@types/node": "^22.17.0",
-    "typescript": "^5.8.3"
+    "@vitest/coverage-v8": "^3.2.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
   },
   "packageManager": "pnpm@10.13.1",
   "engines": {

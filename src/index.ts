@@ -47,3 +47,44 @@ export {
   codeBlock,
   createMarkdownTable,
 } from "./utils.js";
+
+// Export input utilities
+export { sanitizeInput, sanitizeInputs, getBranch } from "./input-utils.js";
+
+// Export string utilities
+export {
+  snakeToCamel,
+  camelToSnake,
+  kebabToCamel,
+  camelToKebab,
+  capitalize,
+  toTitleCase,
+} from "./string-utils.js";
+
+// Export branch utilities
+export {
+  checkBranchExists,
+  listAllBranches,
+  getBranchProtection,
+  getDefaultBranch,
+} from "./branch-utils.js";
+
+// Export deployment utilities
+export {
+  listDeployments,
+  getDeploymentStatuses,
+  setDeploymentStatus,
+  deleteDeployment,
+  createDeployment,
+  type Deployment,
+  type DeploymentStatus,
+} from "./deployment-utils.js";
+
+// Export advanced PR utilities
+export {
+  findPRsWithLabels,
+  searchPullRequests,
+  findOpenPRsWithLabel,
+  checkLabelConflicts,
+  type AdvancedPRSearchOptions,
+} from "./advanced-pr-utils.js";
