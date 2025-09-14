@@ -30,6 +30,12 @@ type Ctx = {
 export default async function run({ core, github, context, args }: Ctx) {
   core.info("🚀 Starting E2E test of github-typescript-utils");
 
+  // Debug: Log the context structure
+  core.info(`🔍 Debug - context keys: ${Object.keys(context).join(', ')}`);
+  core.info(`🔍 Debug - context.repo: ${JSON.stringify(context.repo)}`);
+  core.info(`🔍 Debug - context.eventName: ${context.eventName}`);
+  core.info(`🔍 Debug - context ${JSON.stringify(context)}`);
+
   try {
     // Test 1: Input sanitization
     const sanitizedMessage = sanitizeInput(args.testMessage);
@@ -45,11 +51,11 @@ export default async function run({ core, github, context, args }: Ctx) {
     );
 
     // Test 3: Context utilities
-    const repoInfo = getRepoInfo(context);
+    const repoInfo = getRepoInfo({ core, github, context });
     core.info(`✅ Repo info: ${repoInfo.owner}/${repoInfo.repo}`);
 
     // Test 4: PR context (if available)
-    const prNumber = getCurrentPullRequestNumber(context);
+    const prNumber = getCurrentPullRequestNumber({ core, github, context });
     if (prNumber) {
       core.info(`✅ PR context: Found PR #${prNumber}`);
 
