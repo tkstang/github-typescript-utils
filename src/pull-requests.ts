@@ -1,9 +1,4 @@
-import type {
-  GitHubContext,
-  RepoInfo,
-  PullRequest,
-  PullRequestSearchOptions,
-} from "./types.js";
+import type { GitHubContext, PullRequest, PullRequestSearchOptions, RepoInfo } from './types.js';
 
 /**
  * Finds pull requests that have all of the specified labels
@@ -17,19 +12,13 @@ export async function findPullRequestsByLabels({
   repo: RepoInfo;
   options: PullRequestSearchOptions;
 }): Promise<PullRequest[]> {
-  const {
-    labels,
-    state = "open",
-    limit = 30,
-    sort = "created",
-    direction = "desc",
-  } = options;
+  const { labels, state = 'open', limit = 30, sort = 'created', direction = 'desc' } = options;
 
   if (labels.length === 0) {
-    throw new Error("At least one label must be specified");
+    throw new Error('At least one label must be specified');
   }
 
-  ctx.core.info(`Searching for PRs with labels: ${labels.join(", ")}`);
+  ctx.core.info(`Searching for PRs with labels: ${labels.join(', ')}`);
 
   // Get pull requests with the specified state
   const { data: pullRequests } = await ctx.github.rest.pulls.list({
@@ -42,9 +31,7 @@ export async function findPullRequestsByLabels({
 
   // Filter PRs that have ALL specified labels
   const matchingPRs = pullRequests.filter((pr) => {
-    const prLabels = pr.labels.map((label) =>
-      typeof label === "string" ? label : label.name
-    );
+    const prLabels = pr.labels.map((label) => (typeof label === 'string' ? label : label.name));
     return labels.every((requiredLabel) => prLabels.includes(requiredLabel));
   });
 
@@ -89,11 +76,11 @@ export async function addLabelsToPullRequest({
   labels: string[];
 }): Promise<void> {
   if (labels.length === 0) {
-    ctx.core.info("No labels to add");
+    ctx.core.info('No labels to add');
     return;
   }
 
-  ctx.core.info(`Adding labels to PR #${pullNumber}: ${labels.join(", ")}`);
+  ctx.core.info(`Adding labels to PR #${pullNumber}: ${labels.join(', ')}`);
 
   await ctx.github.rest.issues.addLabels({
     ...repo,
@@ -117,11 +104,11 @@ export async function removeLabelsFromPullRequest({
   labels: string[];
 }): Promise<void> {
   if (labels.length === 0) {
-    ctx.core.info("No labels to remove");
+    ctx.core.info('No labels to remove');
     return;
   }
 
-  ctx.core.info(`Removing labels from PR #${pullNumber}: ${labels.join(", ")}`);
+  ctx.core.info(`Removing labels from PR #${pullNumber}: ${labels.join(', ')}`);
 
   // Remove each label individually
   for (const label of labels) {
@@ -131,9 +118,9 @@ export async function removeLabelsFromPullRequest({
         issue_number: pullNumber,
         name: label,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Ignore 404 errors (label not found on PR)
-      if (error?.status === 404) {
+      if (error && typeof error === 'object' && 'status' in error && error.status === 404) {
         ctx.core.info(`Label '${label}' was not present on PR #${pullNumber}`);
       } else {
         throw error;

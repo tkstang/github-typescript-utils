@@ -1,17 +1,18 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from 'vitest';
 import {
-  listDeployments,
-  getDeploymentStatuses,
-  setDeploymentStatus,
-  deleteDeployment,
   createDeployment,
-} from "../deployment-utils.js";
+  deleteDeployment,
+  getDeploymentStatuses,
+  listDeployments,
+  setDeploymentStatus,
+} from '../deployment-utils.js';
+import { createSimpleMockContext } from './test-utils.js';
 
-describe("listDeployments", () => {
-  it("should return list of deployments", async () => {
+describe('listDeployments', () => {
+  it('should return list of deployments', async () => {
     const mockDeployments = [
-      { id: 1, environment: "production", ref: "main" },
-      { id: 2, environment: "staging", ref: "develop" },
+      { id: 1, environment: 'production', ref: 'main' },
+      { id: 2, environment: 'staging', ref: 'develop' },
     ];
 
     const mockGithub = {
@@ -25,25 +26,21 @@ describe("listDeployments", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await listDeployments({ ctx, repo });
 
     expect(result).toEqual(mockDeployments);
     expect(mockGithub.rest.repos.listDeployments).toHaveBeenCalledWith({
-      owner: "test",
-      repo: "test-repo",
+      owner: 'test',
+      repo: 'test-repo',
       per_page: 100,
       page: 1,
     });
   });
 
-  it("should filter by ref when provided", async () => {
+  it('should filter by ref when provided', async () => {
     const mockGithub = {
       rest: {
         repos: {
@@ -52,25 +49,21 @@ describe("listDeployments", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
-    await listDeployments({ ctx, repo, ref: "main" });
+    const repo = { owner: 'test', repo: 'test-repo' };
+    await listDeployments({ ctx, repo, ref: 'main' });
 
     expect(mockGithub.rest.repos.listDeployments).toHaveBeenCalledWith({
-      owner: "test",
-      repo: "test-repo",
-      ref: "main",
+      owner: 'test',
+      repo: 'test-repo',
+      ref: 'main',
       per_page: 100,
       page: 1,
     });
   });
 
-  it("should filter by environment when provided", async () => {
+  it('should filter by environment when provided', async () => {
     const mockGithub = {
       rest: {
         repos: {
@@ -79,49 +72,39 @@ describe("listDeployments", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
-    await listDeployments({ ctx, repo, environment: "production" });
+    const repo = { owner: 'test', repo: 'test-repo' };
+    await listDeployments({ ctx, repo, environment: 'production' });
 
     expect(mockGithub.rest.repos.listDeployments).toHaveBeenCalledWith({
-      owner: "test",
-      repo: "test-repo",
-      environment: "production",
+      owner: 'test',
+      repo: 'test-repo',
+      environment: 'production',
       per_page: 100,
       page: 1,
     });
   });
 });
 
-describe("getDeploymentStatuses", () => {
-  it("should return deployment statuses", async () => {
+describe('getDeploymentStatuses', () => {
+  it('should return deployment statuses', async () => {
     const mockStatuses = [
-      { id: 1, state: "success" },
-      { id: 2, state: "pending" },
+      { id: 1, state: 'success' },
+      { id: 2, state: 'pending' },
     ];
 
     const mockGithub = {
       rest: {
         repos: {
-          listDeploymentStatuses: vi
-            .fn()
-            .mockResolvedValue({ data: mockStatuses }),
+          listDeploymentStatuses: vi.fn().mockResolvedValue({ data: mockStatuses }),
         },
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await getDeploymentStatuses({
       ctx,
       repo,
@@ -130,54 +113,48 @@ describe("getDeploymentStatuses", () => {
 
     expect(result).toEqual(mockStatuses);
     expect(mockGithub.rest.repos.listDeploymentStatuses).toHaveBeenCalledWith({
-      owner: "test",
-      repo: "test-repo",
+      owner: 'test',
+      repo: 'test-repo',
       deployment_id: 123,
     });
   });
 });
 
-describe("setDeploymentStatus", () => {
-  it("should create deployment status", async () => {
-    const mockStatus = { id: 1, state: "success" };
+describe('setDeploymentStatus', () => {
+  it('should create deployment status', async () => {
+    const mockStatus = { id: 1, state: 'success' };
     const mockGithub = {
       rest: {
         repos: {
-          createDeploymentStatus: vi
-            .fn()
-            .mockResolvedValue({ data: mockStatus }),
+          createDeploymentStatus: vi.fn().mockResolvedValue({ data: mockStatus }),
         },
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await setDeploymentStatus({
       ctx,
       repo,
       deploymentId: 123,
-      state: "success",
-      description: "Deployment successful",
+      state: 'success',
+      description: 'Deployment successful',
     });
 
     expect(result).toEqual(mockStatus);
     expect(mockGithub.rest.repos.createDeploymentStatus).toHaveBeenCalledWith({
-      owner: "test",
-      repo: "test-repo",
+      owner: 'test',
+      repo: 'test-repo',
       deployment_id: 123,
-      state: "success",
-      description: "Deployment successful",
+      state: 'success',
+      description: 'Deployment successful',
     });
   });
 });
 
-describe("deleteDeployment", () => {
-  it("should set deployment to inactive and delete it", async () => {
+describe('deleteDeployment', () => {
+  it('should set deployment to inactive and delete it', async () => {
     const mockGithub = {
       rest: {
         repos: {
@@ -187,33 +164,29 @@ describe("deleteDeployment", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     await deleteDeployment({ ctx, repo, deploymentId: 123 });
 
     expect(mockGithub.rest.repos.createDeploymentStatus).toHaveBeenCalledWith({
-      owner: "test",
-      repo: "test-repo",
+      owner: 'test',
+      repo: 'test-repo',
       deployment_id: 123,
-      state: "inactive",
+      state: 'inactive',
     });
 
     expect(mockGithub.rest.repos.deleteDeployment).toHaveBeenCalledWith({
-      owner: "test",
-      repo: "test-repo",
+      owner: 'test',
+      repo: 'test-repo',
       deployment_id: 123,
     });
   });
 });
 
-describe("createDeployment", () => {
-  it("should create a new deployment", async () => {
-    const mockDeployment = { id: 123, environment: "production" };
+describe('createDeployment', () => {
+  it('should create a new deployment', async () => {
+    const mockDeployment = { id: 123, environment: 'production' };
     const mockGithub = {
       rest: {
         repos: {
@@ -222,33 +195,29 @@ describe("createDeployment", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await createDeployment({
       ctx,
       repo,
-      ref: "main",
-      environment: "production",
-      description: "Deploy to production",
+      ref: 'main',
+      environment: 'production',
+      description: 'Deploy to production',
     });
 
     expect(result).toEqual(mockDeployment);
     expect(mockGithub.rest.repos.createDeployment).toHaveBeenCalledWith({
-      owner: "test",
-      repo: "test-repo",
-      ref: "main",
-      environment: "production",
+      owner: 'test',
+      repo: 'test-repo',
+      ref: 'main',
+      environment: 'production',
       auto_merge: true,
-      description: "Deploy to production",
+      description: 'Deploy to production',
     });
   });
 
-  it("should include optional parameters when provided", async () => {
+  it('should include optional parameters when provided', async () => {
     const mockGithub = {
       rest: {
         repos: {
@@ -257,31 +226,27 @@ describe("createDeployment", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     await createDeployment({
       ctx,
       repo,
-      ref: "main",
-      environment: "production",
-      payload: { version: "1.0.0" },
+      ref: 'main',
+      environment: 'production',
+      payload: { version: '1.0.0' },
       autoMerge: false,
-      requiredContexts: ["ci/test"],
+      requiredContexts: ['ci/test'],
     });
 
     expect(mockGithub.rest.repos.createDeployment).toHaveBeenCalledWith({
-      owner: "test",
-      repo: "test-repo",
-      ref: "main",
-      environment: "production",
+      owner: 'test',
+      repo: 'test-repo',
+      ref: 'main',
+      environment: 'production',
       auto_merge: false,
-      payload: { version: "1.0.0" },
-      required_contexts: ["ci/test"],
+      payload: { version: '1.0.0' },
+      required_contexts: ['ci/test'],
     });
   });
 });

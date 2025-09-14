@@ -1,39 +1,36 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from 'vitest';
 import {
   checkBranchExists,
-  listAllBranches,
   getBranchProtection,
   getDefaultBranch,
-} from "../branch-utils.js";
+  listAllBranches,
+} from '../branch-utils.js';
+import { createSimpleMockContext } from './test-utils.js';
 
-describe("checkBranchExists", () => {
-  it("should return true when branch exists", async () => {
+describe('checkBranchExists', () => {
+  it('should return true when branch exists', async () => {
     const mockGithub = {
       rest: {
         repos: {
-          getBranch: vi.fn().mockResolvedValue({ data: { name: "main" } }),
+          getBranch: vi.fn().mockResolvedValue({ data: { name: 'main' } }),
         },
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
-    const result = await checkBranchExists({ ctx, repo, branch: "main" });
+    const repo = { owner: 'test', repo: 'test-repo' };
+    const result = await checkBranchExists({ ctx, repo, branch: 'main' });
 
     expect(result).toBe(true);
     expect(mockGithub.rest.repos.getBranch).toHaveBeenCalledWith({
-      owner: "test",
-      repo: "test-repo",
-      branch: "main",
+      owner: 'test',
+      repo: 'test-repo',
+      branch: 'main',
     });
   });
 
-  it("should return false when branch does not exist", async () => {
+  it('should return false when branch does not exist', async () => {
     const mockGithub = {
       rest: {
         repos: {
@@ -42,23 +39,19 @@ describe("checkBranchExists", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await checkBranchExists({
       ctx,
       repo,
-      branch: "nonexistent",
+      branch: 'nonexistent',
     });
 
     expect(result).toBe(false);
   });
 
-  it("should throw error for non-404 errors", async () => {
+  it('should throw error for non-404 errors', async () => {
     const mockGithub = {
       rest: {
         repos: {
@@ -67,103 +60,83 @@ describe("checkBranchExists", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
 
-    await expect(
-      checkBranchExists({ ctx, repo, branch: "main" })
-    ).rejects.toEqual({ status: 500 });
+    await expect(checkBranchExists({ ctx, repo, branch: 'main' })).rejects.toEqual({ status: 500 });
   });
 });
 
-describe("listAllBranches", () => {
-  it("should return list of branch names", async () => {
+describe('listAllBranches', () => {
+  it('should return list of branch names', async () => {
     const mockGithub = {
       rest: {
         repos: {
           listBranches: vi
             .fn()
             .mockResolvedValueOnce({
-              data: [{ name: "main" }, { name: "develop" }],
+              data: [{ name: 'main' }, { name: 'develop' }],
             })
             .mockResolvedValueOnce({ data: [] }),
         },
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await listAllBranches({ ctx, repo });
 
-    expect(result).toEqual(["main", "develop"]);
+    expect(result).toEqual(['main', 'develop']);
     expect(mockGithub.rest.repos.listBranches).toHaveBeenCalledWith({
-      owner: "test",
-      repo: "test-repo",
+      owner: 'test',
+      repo: 'test-repo',
       per_page: 100,
       page: 1,
     });
   });
 
-  it("should respect limit parameter", async () => {
+  it('should respect limit parameter', async () => {
     const mockGithub = {
       rest: {
         repos: {
           listBranches: vi.fn().mockResolvedValue({
-            data: [{ name: "main" }, { name: "develop" }, { name: "feature" }],
+            data: [{ name: 'main' }, { name: 'develop' }, { name: 'feature' }],
           }),
         },
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await listAllBranches({ ctx, repo, limit: 2 });
 
-    expect(result).toEqual(["main", "develop"]);
+    expect(result).toEqual(['main', 'develop']);
   });
 });
 
-describe("getBranchProtection", () => {
-  it("should return protection rules when they exist", async () => {
+describe('getBranchProtection', () => {
+  it('should return protection rules when they exist', async () => {
     const mockProtection = { required_status_checks: null };
     const mockGithub = {
       rest: {
         repos: {
-          getBranchProtection: vi
-            .fn()
-            .mockResolvedValue({ data: mockProtection }),
+          getBranchProtection: vi.fn().mockResolvedValue({ data: mockProtection }),
         },
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
-    const result = await getBranchProtection({ ctx, repo, branch: "main" });
+    const repo = { owner: 'test', repo: 'test-repo' };
+    const result = await getBranchProtection({ ctx, repo, branch: 'main' });
 
     expect(result).toEqual(mockProtection);
   });
 
-  it("should return null when no protection rules exist", async () => {
+  it('should return null when no protection rules exist', async () => {
     const mockGithub = {
       rest: {
         repos: {
@@ -172,42 +145,34 @@ describe("getBranchProtection", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
-    const result = await getBranchProtection({ ctx, repo, branch: "main" });
+    const repo = { owner: 'test', repo: 'test-repo' };
+    const result = await getBranchProtection({ ctx, repo, branch: 'main' });
 
     expect(result).toBeNull();
   });
 });
 
-describe("getDefaultBranch", () => {
-  it("should return the default branch name", async () => {
+describe('getDefaultBranch', () => {
+  it('should return the default branch name', async () => {
     const mockGithub = {
       rest: {
         repos: {
-          get: vi.fn().mockResolvedValue({ data: { default_branch: "main" } }),
+          get: vi.fn().mockResolvedValue({ data: { default_branch: 'main' } }),
         },
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await getDefaultBranch({ ctx, repo });
 
-    expect(result).toBe("main");
+    expect(result).toBe('main');
     expect(mockGithub.rest.repos.get).toHaveBeenCalledWith({
-      owner: "test",
-      repo: "test-repo",
+      owner: 'test',
+      repo: 'test-repo',
     });
   });
 });

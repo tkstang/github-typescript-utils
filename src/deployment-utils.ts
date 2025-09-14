@@ -1,4 +1,4 @@
-import type { GitHubContext, RepoInfo } from "./types.js";
+import type { GitHubContext, RepoInfo } from './types.js';
 
 /**
  * Deployment structure from GitHub API
@@ -8,7 +8,7 @@ export type Deployment = {
   sha: string;
   ref: string;
   task: string;
-  payload: any;
+  payload: Record<string, unknown>;
   environment: string;
   description: string | null;
   creator: {
@@ -26,14 +26,7 @@ export type Deployment = {
  */
 export type DeploymentStatus = {
   id: number;
-  state:
-    | "error"
-    | "failure"
-    | "inactive"
-    | "pending"
-    | "success"
-    | "queued"
-    | "in_progress";
+  state: 'error' | 'failure' | 'inactive' | 'pending' | 'success' | 'queued' | 'in_progress';
   creator: {
     login: string;
     id: number;
@@ -127,14 +120,7 @@ export async function setDeploymentStatus({
   ctx: GitHubContext;
   repo: RepoInfo;
   deploymentId: number;
-  state:
-    | "error"
-    | "failure"
-    | "inactive"
-    | "pending"
-    | "success"
-    | "queued"
-    | "in_progress";
+  state: 'error' | 'failure' | 'inactive' | 'pending' | 'success' | 'queued' | 'in_progress';
   description?: string;
   targetUrl?: string;
   environment?: string;
@@ -168,7 +154,7 @@ export async function deleteDeployment({
     ctx,
     repo,
     deploymentId,
-    state: "inactive",
+    state: 'inactive',
   });
 
   // Then delete the deployment
@@ -196,7 +182,7 @@ export async function createDeployment({
   ref: string;
   environment: string;
   description?: string;
-  payload?: any;
+  payload?: Record<string, unknown>;
   autoMerge?: boolean;
   requiredContexts?: string[];
 }): Promise<Deployment> {

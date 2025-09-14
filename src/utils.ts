@@ -1,4 +1,4 @@
-import type { GitHubContext, RepoInfo } from "./types.js";
+import type { GitHubContext, RepoInfo } from './types.js';
 
 /**
  * Extracts repository information from the GitHub context
@@ -15,7 +15,7 @@ export function getRepoInfo(ctx: GitHubContext): RepoInfo {
  */
 export function getCurrentPullRequestNumber(ctx: GitHubContext): number | null {
   const prNumber = ctx.context.payload.pull_request?.number;
-  return typeof prNumber === "number" ? prNumber : null;
+  return typeof prNumber === 'number' ? prNumber : null;
 }
 
 /**
@@ -23,10 +23,8 @@ export function getCurrentPullRequestNumber(ctx: GitHubContext): number | null {
  */
 export function getCurrentIssueNumber(ctx: GitHubContext): number | null {
   // Check for issue or pull request (PRs are also issues in GitHub API)
-  const issueNumber =
-    ctx.context.payload.issue?.number ||
-    ctx.context.payload.pull_request?.number;
-  return typeof issueNumber === "number" ? issueNumber : null;
+  const issueNumber = ctx.context.payload.issue?.number || ctx.context.payload.pull_request?.number;
+  return typeof issueNumber === 'number' ? issueNumber : null;
 }
 
 /**
@@ -47,11 +45,7 @@ export function isIssueContext(ctx: GitHubContext): boolean {
  * Gets the SHA of the current commit
  */
 export function getCurrentSHA(ctx: GitHubContext): string {
-  return (
-    ctx.context.payload.pull_request?.head.sha ||
-    ctx.context.payload.after ||
-    ctx.context.sha
-  );
+  return ctx.context.payload.pull_request?.head.sha || ctx.context.payload.after || ctx.context.sha;
 }
 
 /**
@@ -64,8 +58,8 @@ export function getCurrentBranch(ctx: GitHubContext): string {
   }
 
   // For push events, extract from ref
-  if (ctx.context.ref.startsWith("refs/heads/")) {
-    return ctx.context.ref.replace("refs/heads/", "");
+  if (ctx.context.ref.startsWith('refs/heads/')) {
+    return ctx.context.ref.replace('refs/heads/', '');
   }
 
   return ctx.context.ref;
@@ -90,10 +84,7 @@ export function getIssueUrl(ctx: GitHubContext, issueNumber: number): string {
 /**
  * Creates a GitHub API URL for a specific pull request
  */
-export function getPullRequestUrl(
-  ctx: GitHubContext,
-  pullNumber: number
-): string {
+export function getPullRequestUrl(ctx: GitHubContext, pullNumber: number): string {
   const { owner, repo } = getRepoInfo(ctx);
   return `https://github.com/${owner}/${repo}/pull/${pullNumber}`;
 }
@@ -127,34 +118,31 @@ export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) {
     return text;
   }
-  return text.slice(0, maxLength - 3) + "...";
+  return `${text.slice(0, maxLength - 3)}...`;
 }
 
 /**
  * Escapes markdown special characters in text
  */
 export function escapeMarkdown(text: string): string {
-  return text.replace(/[\\`*_{}[\]()#+\-.!]/g, "\\$&");
+  return text.replace(/[\\`*_{}[\]()#+\-.!]/g, '\\$&');
 }
 
 /**
  * Creates a markdown code block with optional language
  */
 export function codeBlock(code: string, language?: string): string {
-  const lang = language || "";
+  const lang = language || '';
   return `\`\`\`${lang}\n${code}\n\`\`\``;
 }
 
 /**
  * Creates a markdown table from data
  */
-export function createMarkdownTable(
-  headers: string[],
-  rows: string[][]
-): string {
-  const headerRow = `| ${headers.join(" | ")} |`;
-  const separatorRow = `| ${headers.map(() => "---").join(" | ")} |`;
-  const dataRows = rows.map((row) => `| ${row.join(" | ")} |`);
+export function createMarkdownTable(headers: string[], rows: string[][]): string {
+  const headerRow = `| ${headers.join(' | ')} |`;
+  const separatorRow = `| ${headers.map(() => '---').join(' | ')} |`;
+  const dataRows = rows.map((row) => `| ${row.join(' | ')} |`);
 
-  return [headerRow, separatorRow, ...dataRows].join("\n");
+  return [headerRow, separatorRow, ...dataRows].join('\n');
 }

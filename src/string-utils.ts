@@ -2,7 +2,7 @@
  * Converts snake_case strings to camelCase
  */
 export function snakeToCamel(str: string): string {
-  return str.replace(/(_\w)/g, (match) => match[1]?.toUpperCase() || "");
+  return str.replace(/(_\w)/g, (match) => match[1]?.toUpperCase() || '');
 }
 
 /**
@@ -16,7 +16,7 @@ export function camelToSnake(str: string): string {
  * Converts kebab-case strings to camelCase
  */
 export function kebabToCamel(str: string): string {
-  return str.replace(/(-\w)/g, (match) => match[1]?.toUpperCase() || "");
+  return str.replace(/(-\w)/g, (match) => match[1]?.toUpperCase() || '');
 }
 
 /**
@@ -37,8 +37,5 @@ export function capitalize(str: string): string {
  * Converts a string to Title Case
  */
 export function toTitleCase(str: string): string {
-  return str.replace(
-    /\w\S*/g,
-    (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-  );
+  return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 }

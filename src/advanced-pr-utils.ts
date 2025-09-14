@@ -1,4 +1,4 @@
-import type { GitHubContext, RepoInfo, PullRequest } from "./types.js";
+import type { GitHubContext, PullRequest, RepoInfo } from './types.js';
 
 /**
  * Options for searching pull requests
@@ -12,7 +12,7 @@ export type AdvancedPRSearchOptions = {
    * PR state to filter by
    * @default 'open'
    */
-  state?: "open" | "closed" | "all";
+  state?: 'open' | 'closed' | 'all';
   /**
    * Author username to filter by
    */
@@ -26,12 +26,12 @@ export type AdvancedPRSearchOptions = {
    * Sort order
    * @default 'created'
    */
-  sort?: "created" | "updated" | "popularity" | "long-running";
+  sort?: 'created' | 'updated' | 'popularity' | 'long-running';
   /**
    * Sort direction
    * @default 'desc'
    */
-  direction?: "asc" | "desc";
+  direction?: 'asc' | 'desc';
   /**
    * Exclude specific PR numbers
    */
@@ -45,22 +45,22 @@ export async function findPRsWithLabels({
   ctx,
   repo,
   labels,
-  state = "open",
+  state = 'open',
   limit = 100,
   excludePRs = [],
 }: {
   ctx: GitHubContext;
   repo: RepoInfo;
   labels: string[];
-  state?: "open" | "closed" | "all";
+  state?: 'open' | 'closed' | 'all';
   limit?: number;
   excludePRs?: number[];
 }): Promise<PullRequest[]> {
   if (labels.length === 0) {
-    throw new Error("At least one label must be specified");
+    throw new Error('At least one label must be specified');
   }
 
-  ctx.core.info(`Searching for PRs with labels: ${labels.join(", ")}`);
+  ctx.core.info(`Searching for PRs with labels: ${labels.join(', ')}`);
 
   const pullRequests: PullRequest[] = [];
   let page = 1;
@@ -84,9 +84,7 @@ export async function findPRsWithLabels({
         return false;
       }
 
-      const prLabels = pr.labels.map((label) =>
-        typeof label === "string" ? label : label.name
-      );
+      const prLabels = pr.labels.map((label) => (typeof label === 'string' ? label : label.name));
       return labels.every((requiredLabel) => prLabels.includes(requiredLabel));
     });
 
@@ -117,11 +115,11 @@ export async function searchPullRequests({
 }): Promise<PullRequest[]> {
   const {
     labels = [],
-    state = "open",
+    state = 'open',
     author,
     limit = 100,
-    sort = "created",
-    direction = "desc",
+    sort = 'created',
+    direction = 'desc',
     excludePRs = [],
   } = options;
 
@@ -157,12 +155,8 @@ export async function searchPullRequests({
 
       // Filter by labels (if specified)
       if (labels.length > 0) {
-        const prLabels = pr.labels.map((label) =>
-          typeof label === "string" ? label : label.name
-        );
-        if (
-          !labels.every((requiredLabel) => prLabels.includes(requiredLabel))
-        ) {
+        const prLabels = pr.labels.map((label) => (typeof label === 'string' ? label : label.name));
+        if (!labels.every((requiredLabel) => prLabels.includes(requiredLabel))) {
           return false;
         }
       }
@@ -202,7 +196,7 @@ export async function findOpenPRsWithLabel({
     ctx,
     repo,
     labels: [label],
-    state: "open",
+    state: 'open',
     excludePRs,
     limit,
   });

@@ -1,4 +1,4 @@
-import type { GitHubContext, RepoInfo } from "./types.js";
+import type { GitHubContext, RepoInfo } from './types.js';
 
 /**
  * Checks if a branch exists in the repository
@@ -18,8 +18,8 @@ export async function checkBranchExists({
       branch,
     });
     return true;
-  } catch (error: any) {
-    if (error?.status === 404) {
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'status' in error && error.status === 404) {
       return false;
     }
     throw error;
@@ -83,8 +83,8 @@ export async function getBranchProtection({
       branch,
     });
     return data;
-  } catch (error: any) {
-    if (error?.status === 404) {
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'status' in error && error.status === 404) {
       return null; // No protection rules
     }
     throw error;

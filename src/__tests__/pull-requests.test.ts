@@ -1,32 +1,33 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from 'vitest';
 import {
-  findPullRequestsByLabels,
   addLabelsToPullRequest,
-  removeLabelsFromPullRequest,
-  pullRequestHasLabels,
+  findPullRequestsByLabels,
   getPullRequestFiles,
-} from "../pull-requests.js";
+  pullRequestHasLabels,
+  removeLabelsFromPullRequest,
+} from '../pull-requests.js';
+import { createSimpleMockContext } from './test-utils.js';
 
-describe("findPullRequestsByLabels", () => {
-  it("should find pull requests matching criteria", async () => {
+describe('findPullRequestsByLabels', () => {
+  it('should find pull requests matching criteria', async () => {
     const mockPRs = [
       {
         number: 1,
-        title: "Fix bug",
-        labels: [{ name: "bug" }, { name: "urgent" }],
-        user: { login: "alice" },
+        title: 'Fix bug',
+        labels: [{ name: 'bug' }, { name: 'urgent' }],
+        user: { login: 'alice' },
       },
       {
         number: 2,
-        title: "Add feature",
-        labels: [{ name: "feature" }],
-        user: { login: "bob" },
+        title: 'Add feature',
+        labels: [{ name: 'feature' }],
+        user: { login: 'bob' },
       },
       {
         number: 3,
-        title: "Another bug fix",
-        labels: [{ name: "bug" }],
-        user: { login: "alice" },
+        title: 'Another bug fix',
+        labels: [{ name: 'bug' }],
+        user: { login: 'alice' },
       },
     ];
 
@@ -41,19 +42,15 @@ describe("findPullRequestsByLabels", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await findPullRequestsByLabels({
       ctx,
       repo,
       options: {
-        labels: ["bug"],
-        state: "open",
+        labels: ['bug'],
+        state: 'open',
       },
     });
 
@@ -62,7 +59,7 @@ describe("findPullRequestsByLabels", () => {
     expect(result[1].number).toBe(3);
   });
 
-  it("should handle empty results", async () => {
+  it('should handle empty results', async () => {
     const mockGithub = {
       rest: {
         pulls: {
@@ -71,27 +68,23 @@ describe("findPullRequestsByLabels", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await findPullRequestsByLabels({
       ctx,
       repo,
-      options: { labels: ["nonexistent"] },
+      options: { labels: ['nonexistent'] },
     });
 
     expect(result).toHaveLength(0);
   });
 
-  it("should respect limit parameter", async () => {
+  it('should respect limit parameter', async () => {
     const mockPRs = Array.from({ length: 5 }, (_, i) => ({
       number: i + 1,
       title: `PR ${i + 1}`,
-      labels: [{ name: "test" }],
+      labels: [{ name: 'test' }],
     }));
 
     const mockGithub = {
@@ -102,18 +95,14 @@ describe("findPullRequestsByLabels", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await findPullRequestsByLabels({
       ctx,
       repo,
       options: {
-        labels: ["test"],
+        labels: ['test'],
         limit: 3,
       },
     });
@@ -122,47 +111,41 @@ describe("findPullRequestsByLabels", () => {
   });
 });
 
-describe("addLabelsToPullRequest", () => {
-  it("should add labels to pull request", async () => {
+describe('addLabelsToPullRequest', () => {
+  it('should add labels to pull request', async () => {
     const mockGithub = {
       rest: {
         issues: {
           addLabels: vi.fn().mockResolvedValue({
-            data: [{ name: "bug" }, { name: "urgent" }],
+            data: [{ name: 'bug' }, { name: 'urgent' }],
           }),
         },
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await addLabelsToPullRequest({
       ctx,
       repo,
       pullNumber: 123,
-      labels: ["bug", "urgent"],
+      labels: ['bug', 'urgent'],
     });
 
     expect(result).toBeUndefined();
     expect(mockGithub.rest.issues.addLabels).toHaveBeenCalledWith({
-      owner: "test",
-      repo: "test-repo",
+      owner: 'test',
+      repo: 'test-repo',
       issue_number: 123,
-      labels: ["bug", "urgent"],
+      labels: ['bug', 'urgent'],
     });
-    expect(ctx.core.info).toHaveBeenCalledWith(
-      "Adding labels to PR #123: bug, urgent"
-    );
+    expect(ctx.core.info).toHaveBeenCalledWith('Adding labels to PR #123: bug, urgent');
   });
 });
 
-describe("removeLabelsFromPullRequest", () => {
-  it("should remove labels from pull request", async () => {
+describe('removeLabelsFromPullRequest', () => {
+  it('should remove labels from pull request', async () => {
     const mockGithub = {
       rest: {
         issues: {
@@ -171,74 +154,60 @@ describe("removeLabelsFromPullRequest", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     await removeLabelsFromPullRequest({
       ctx,
       repo,
       pullNumber: 123,
-      labels: ["bug", "urgent"],
+      labels: ['bug', 'urgent'],
     });
 
     expect(mockGithub.rest.issues.removeLabel).toHaveBeenCalledTimes(2);
     expect(mockGithub.rest.issues.removeLabel).toHaveBeenCalledWith({
-      owner: "test",
-      repo: "test-repo",
+      owner: 'test',
+      repo: 'test-repo',
       issue_number: 123,
-      name: "bug",
+      name: 'bug',
     });
     expect(mockGithub.rest.issues.removeLabel).toHaveBeenCalledWith({
-      owner: "test",
-      repo: "test-repo",
+      owner: 'test',
+      repo: 'test-repo',
       issue_number: 123,
-      name: "urgent",
+      name: 'urgent',
     });
-    expect(ctx.core.info).toHaveBeenCalledWith(
-      "Removing labels from PR #123: bug, urgent"
-    );
+    expect(ctx.core.info).toHaveBeenCalledWith('Removing labels from PR #123: bug, urgent');
   });
 
-  it("should handle label removal errors gracefully", async () => {
+  it('should handle label removal errors gracefully', async () => {
     const mockGithub = {
       rest: {
         issues: {
-          removeLabel: vi
-            .fn()
-            .mockResolvedValueOnce({})
-            .mockRejectedValueOnce({ status: 404 }),
+          removeLabel: vi.fn().mockResolvedValueOnce({}).mockRejectedValueOnce({ status: 404 }),
         },
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn(), warning: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
+    ctx.core.warning = vi.fn();
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     await removeLabelsFromPullRequest({
       ctx,
       repo,
       pullNumber: 123,
-      labels: ["existing", "nonexistent"],
+      labels: ['existing', 'nonexistent'],
     });
 
-    expect(ctx.core.info).toHaveBeenCalledWith(
-      "Label 'nonexistent' was not present on PR #123"
-    );
+    expect(ctx.core.info).toHaveBeenCalledWith("Label 'nonexistent' was not present on PR #123");
   });
 });
 
-describe("pullRequestHasLabels", () => {
-  it("should return true when PR has all specified labels", async () => {
+describe('pullRequestHasLabels', () => {
+  it('should return true when PR has all specified labels', async () => {
     const mockPR = {
-      labels: [{ name: "bug" }, { name: "urgent" }, { name: "frontend" }],
+      labels: [{ name: 'bug' }, { name: 'urgent' }, { name: 'frontend' }],
     };
 
     const mockGithub = {
@@ -249,26 +218,22 @@ describe("pullRequestHasLabels", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await pullRequestHasLabels({
       ctx,
       repo,
       pullNumber: 123,
-      labels: ["bug", "urgent"],
+      labels: ['bug', 'urgent'],
     });
 
     expect(result).toBe(true);
   });
 
-  it("should return false when PR is missing some labels", async () => {
+  it('should return false when PR is missing some labels', async () => {
     const mockPR = {
-      labels: [{ name: "bug" }],
+      labels: [{ name: 'bug' }],
     };
 
     const mockGithub = {
@@ -279,26 +244,22 @@ describe("pullRequestHasLabels", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await pullRequestHasLabels({
       ctx,
       repo,
       pullNumber: 123,
-      labels: ["bug", "urgent"],
+      labels: ['bug', 'urgent'],
     });
 
     expect(result).toBe(false);
   });
 
-  it("should return true for empty labels array", async () => {
+  it('should return true for empty labels array', async () => {
     const mockPR = {
-      labels: [{ name: "bug" }],
+      labels: [{ name: 'bug' }],
     };
 
     const mockGithub = {
@@ -309,13 +270,9 @@ describe("pullRequestHasLabels", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await pullRequestHasLabels({
       ctx,
       repo,
@@ -327,28 +284,28 @@ describe("pullRequestHasLabels", () => {
   });
 });
 
-describe("getPullRequestFiles", () => {
-  it("should return list of changed files", async () => {
+describe('getPullRequestFiles', () => {
+  it('should return list of changed files', async () => {
     const mockFiles = [
       {
-        filename: "src/index.ts",
-        status: "modified",
+        filename: 'src/index.ts',
+        status: 'modified',
         additions: 10,
         deletions: 5,
         changes: 15,
         patch: "@@ -1,3 +1,4 @@\n console.log('test');",
       },
       {
-        filename: "README.md",
-        status: "added",
+        filename: 'README.md',
+        status: 'added',
         additions: 20,
         deletions: 0,
         changes: 20,
-        patch: "@@ -0,0 +1,20 @@\n# New README",
+        patch: '@@ -0,0 +1,20 @@\n# New README',
       },
       {
-        filename: "old-file.js",
-        status: "removed",
+        filename: 'old-file.js',
+        status: 'removed',
         additions: 0,
         deletions: 50,
         changes: 50,
@@ -367,13 +324,9 @@ describe("getPullRequestFiles", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await getPullRequestFiles({
       ctx,
       repo,
@@ -382,27 +335,27 @@ describe("getPullRequestFiles", () => {
 
     expect(result).toHaveLength(3);
     expect(result[0]).toEqual({
-      filename: "src/index.ts",
-      status: "modified",
+      filename: 'src/index.ts',
+      status: 'modified',
       additions: 10,
       deletions: 5,
       changes: 15,
       patch: "@@ -1,3 +1,4 @@\n console.log('test');",
     });
     expect(result[2]).toEqual({
-      filename: "old-file.js",
-      status: "removed",
+      filename: 'old-file.js',
+      status: 'removed',
       additions: 0,
       deletions: 50,
       changes: 50,
     });
   });
 
-  it("should handle files without patches", async () => {
+  it('should handle files without patches', async () => {
     const mockFiles = [
       {
-        filename: "binary-file.png",
-        status: "added",
+        filename: 'binary-file.png',
+        status: 'added',
         additions: 0,
         deletions: 0,
         changes: 0,
@@ -418,13 +371,9 @@ describe("getPullRequestFiles", () => {
       },
     };
 
-    const ctx = {
-      core: { info: vi.fn() },
-      github: mockGithub,
-      context: {},
-    } as any;
+    const ctx = createSimpleMockContext(mockGithub);
 
-    const repo = { owner: "test", repo: "test-repo" };
+    const repo = { owner: 'test', repo: 'test-repo' };
     const result = await getPullRequestFiles({
       ctx,
       repo,
@@ -433,12 +382,12 @@ describe("getPullRequestFiles", () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]).toEqual({
-      filename: "binary-file.png",
-      status: "added",
+      filename: 'binary-file.png',
+      status: 'added',
       additions: 0,
       deletions: 0,
       changes: 0,
     });
-    expect(result[0]).not.toHaveProperty("patch");
+    expect(result[0]).not.toHaveProperty('patch');
   });
 });
