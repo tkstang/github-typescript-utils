@@ -1,8 +1,8 @@
 # github-typescript-utils
 
-**Utility functions for GitHub REST API interactions with [`github-typescript`](https://github.com/tkstang/github-typescript).**
+**TypeScript utilities for GitHub Actions workflows with [`github-typescript`](https://github.com/tkstang/github-typescript).**
 
-This package provides a comprehensive set of TypeScript utilities for interacting with the GitHub REST API within GitHub Actions workflows. Designed specifically for use with the `github-typescript` composite action, these utilities simplify common GitHub operations like managing comments, pull requests, and repository interactions.
+This package provides a comprehensive set of TypeScript utilities for GitHub Actions workflows, including REST API interactions, Octokit helpers, context utilities, and common workflow functions. Designed specifically for use with the `github-typescript` composite action, these utilities simplify working with GitHub's API, Actions context, and core functionality.
 
 ## Features
 

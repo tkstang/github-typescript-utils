@@ -1,7 +1,7 @@
 {
   "name": "github-typescript-utils",
   "version": "0.2.0",
-  "description": "Utility functions for GitHub REST API interactions with github-typescript",
+  "description": "TypeScript utilities for GitHub Actions workflows - REST API, Octokit, context helpers, and common workflow functions",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -24,7 +24,11 @@
     "github-api",
     "utilities",
     "rest-api",
-    "octokit"
+    "octokit",
+    "workflow",
+    "context",
+    "core",
+    "github-script"
   ],
   "author": "tkstang",
   "license": "MIT",

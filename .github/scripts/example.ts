@@ -71,7 +71,7 @@ export default async function run({ core, github, context, args }: Ctx) {
     const branchExists = await checkBranchExists({
       ctx,
       repo: repoInfo,
-      branchName: args.testBranch,
+      branch: args.testBranch,
     });
     core.info(`✅ Branch check: "${args.testBranch}" exists = ${branchExists}`);
 
