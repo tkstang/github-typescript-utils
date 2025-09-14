@@ -1,7 +1,4 @@
 import {
-  createStickyComment,
-  findCommentByIdentifier,
-  addLabelsToPullRequest,
   pullRequestHasLabels,
   getCurrentPullRequestNumber,
   getRepoInfo,
@@ -9,7 +6,6 @@ import {
   escapeMarkdown,
   formatDate,
   checkBranchExists,
-  listDeployments,
 } from "github-typescript-utils";
 
 type Ctx = {
@@ -30,13 +26,9 @@ type Ctx = {
 export default async function run({ core, github, context, args }: Ctx) {
   core.info("🚀 Starting E2E test of github-typescript-utils");
 
-  // Debug: Log the context structure
-  core.info(`🔍 Debug - context keys: ${Object.keys(context).join(', ')}`);
-  core.info(`🔍 Debug - context.repo: ${JSON.stringify(context.repo)}`);
-  core.info(`🔍 Debug - context.eventName: ${context.eventName}`);
-  core.info(`🔍 Debug - context ${JSON.stringify(context)}`);
-
   try {
+    const ctx = { core, github, context };
+
     // Test 1: Input sanitization
     const sanitizedMessage = sanitizeInput(args.testMessage);
     core.info(
@@ -51,17 +43,17 @@ export default async function run({ core, github, context, args }: Ctx) {
     );
 
     // Test 3: Context utilities
-    const repoInfo = getRepoInfo({ core, github, context });
+    const repoInfo = getRepoInfo(ctx);
     core.info(`✅ Repo info: ${repoInfo.owner}/${repoInfo.repo}`);
 
     // Test 4: PR context (if available)
-    const prNumber = getCurrentPullRequestNumber({ core, github, context });
+    const prNumber = getCurrentPullRequestNumber(ctx);
     if (prNumber) {
       core.info(`✅ PR context: Found PR #${prNumber}`);
 
       // Test PR utilities
       const hasLabels = await pullRequestHasLabels({
-        ctx: { core, github, context },
+        ctx,
         repo: repoInfo,
         pullNumber: prNumber,
         labels: args.testLabels,
@@ -77,7 +69,7 @@ export default async function run({ core, github, context, args }: Ctx) {
 
     // Test 5: Branch utilities
     const branchExists = await checkBranchExists({
-      ctx: { core, github, context },
+      ctx,
       repo: repoInfo,
       branchName: args.testBranch,
     });

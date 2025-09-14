@@ -61,28 +61,49 @@ jobs:
       - name: Coverage Summary
         run: |
           # Run tests with coverage and capture output
-          TEST_OUTPUT=$(pnpm run test:coverage 2>&1)
+          pnpm run test:coverage > coverage_output.txt 2>&1
 
           echo "## 📊 Test Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Extract test results
-          TEST_COUNT=$(echo "$TEST_OUTPUT" | grep -o '[0-9]\+ passed' | head -1 | grep -o '[0-9]\+')
-          OVERALL_COVERAGE=$(echo "$TEST_OUTPUT" | grep "All files" | awk '{print $3}')
+          TEST_COUNT=$(grep -o '[0-9]\+ passed' coverage_output.txt | head -1 | grep -o '[0-9]\+' || echo "0")
 
-          # Add coverage table
-          echo "| File | Statements | Branches | Functions | Lines |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|------------|----------|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+          # Check if coverage file exists and extract coverage
+          if [ -f coverage/coverage-summary.json ]; then
+            OVERALL_COVERAGE=$(node -e "
+              const fs = require('fs');
+              const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+              console.log(coverage.total.statements.pct + '%');
+            ")
 
-          # Parse coverage and add to summary
-          echo "$TEST_OUTPUT" | grep -E "^\s*(All files|[a-z-]+\.ts)" | while read line; do
-            if [[ $line == *"All files"* ]]; then
-              echo "| **Overall** | $(echo $line | awk '{print $3}') | $(echo $line | awk '{print $4}') | $(echo $line | awk '{print $5}') | $(echo $line | awk '{print $6}') |" >> $GITHUB_STEP_SUMMARY
-            elif [[ $line == *.ts* ]]; then
-              filename=$(echo $line | awk '{print $1}')
-              echo "| $filename | $(echo $line | awk '{print $3}') | $(echo $line | awk '{print $4}') | $(echo $line | awk '{print $5}') | $(echo $line | awk '{print $6}') |" >> $GITHUB_STEP_SUMMARY
-            fi
-          done
+            echo "| File | Statements | Branches | Functions | Lines |" >> $GITHUB_STEP_SUMMARY
+            echo "|------|------------|----------|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+
+            # Add overall coverage
+            node -e "
+              const fs = require('fs');
+              const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+              const total = coverage.total;
+              console.log(\`| **Overall** | \${total.statements.pct}% | \${total.branches.pct}% | \${total.functions.pct}% | \${total.lines.pct}% |\`);
+            " >> $GITHUB_STEP_SUMMARY
+
+            # Add individual file coverage
+            node -e "
+              const fs = require('fs');
+              const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+              Object.keys(coverage).forEach(file => {
+                if (file !== 'total' && file.includes('src/') && !file.includes('__tests__')) {
+                  const filename = file.split('/').pop();
+                  const fileCov = coverage[file];
+                  console.log(\`| \${filename} | \${fileCov.statements.pct}% | \${fileCov.branches.pct}% | \${fileCov.functions.pct}% | \${fileCov.lines.pct}% |\`);
+                }
+              });
+            " >> $GITHUB_STEP_SUMMARY
+          else
+            OVERALL_COVERAGE="N/A"
+            echo "Coverage data not available" >> $GITHUB_STEP_SUMMARY
+          fi
 
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✅ **${TEST_COUNT} tests passed** with **${OVERALL_COVERAGE} overall coverage**" >> $GITHUB_STEP_SUMMARY
@@ -198,4 +219,4 @@ jobs:
         run: pnpm run build
 
       - name: Publish dry run
-        run: pnpm publish --dry-run
+        run: pnpm publish --dry-run --no-git-checks
