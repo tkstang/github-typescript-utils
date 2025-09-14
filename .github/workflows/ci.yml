@@ -108,6 +108,16 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      # Install main package dependencies and build. These steps are only
+      # necessary because the example used for the e2e tewst is resolving
+      # utils via file:../../ to use the current local version of the package.
+      # Normally, the dependency would be the published version of the package.
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build package
+        run: pnpm run build
+
       # Install scripts dependencies (including local utils via file:../../)
       - name: Setup scripts dependencies
         run: |
