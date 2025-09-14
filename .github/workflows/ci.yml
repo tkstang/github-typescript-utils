@@ -79,28 +79,18 @@ jobs:
               console.log(coverage.total.statements.pct + '%');
             ")
 
-            echo "| File | Statements | Branches | Functions | Lines |" >> $GITHUB_STEP_SUMMARY
-            echo "|------|------------|----------|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Coverage |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|----------|" >> $GITHUB_STEP_SUMMARY
 
-            # Add overall coverage
+            # Add overall coverage summary
             node -e "
               const fs = require('fs');
               const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
               const total = coverage.total;
-              console.log(\`| **Overall** | \${total.statements.pct}% | \${total.branches.pct}% | \${total.functions.pct}% | \${total.lines.pct}% |\`);
-            " >> $GITHUB_STEP_SUMMARY
-
-            # Add individual file coverage
-            node -e "
-              const fs = require('fs');
-              const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
-              Object.keys(coverage).forEach(file => {
-                if (file !== 'total' && file.includes('src/') && !file.includes('__tests__')) {
-                  const filename = file.split('/').pop();
-                  const fileCov = coverage[file];
-                  console.log(\`| \${filename} | \${fileCov.statements.pct}% | \${fileCov.branches.pct}% | \${fileCov.functions.pct}% | \${fileCov.lines.pct}% |\`);
-                }
-              });
+              console.log(\`| **Statements** | \${total.statements.pct}% (\${total.statements.covered}/\${total.statements.total}) |\`);
+              console.log(\`| **Branches** | \${total.branches.pct}% (\${total.branches.covered}/\${total.branches.total}) |\`);
+              console.log(\`| **Functions** | \${total.functions.pct}% (\${total.functions.covered}/\${total.functions.total}) |\`);
+              console.log(\`| **Lines** | \${total.lines.pct}% (\${total.lines.covered}/\${total.lines.total}) |\`);
             " >> $GITHUB_STEP_SUMMARY
           else
             OVERALL_COVERAGE="N/A"
