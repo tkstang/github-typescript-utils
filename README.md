@@ -52,6 +52,70 @@ yarn add github-typescript-utils
 
 ## Usage with github-typescript
 
+### Dependency Setup
+
+For `esbuild` to resolve `github-typescript-utils`, you need the package available in `node_modules`. Choose one approach:
+
+#### Option A: Root Dependencies (Simplest)
+
+Add to your repository's root `package.json`:
+
+```json
+{
+  "dependencies": {
+    "github-typescript-utils": "^0.2.0"
+  }
+}
+```
+
+Workflow setup:
+
+```yaml
+- uses: actions/setup-node@v4
+  with:
+    node-version: 22
+    cache: pnpm
+- run: pnpm install
+
+- uses: tkstang/github-typescript@v1
+  with:
+    ts-file: .github/scripts/manage-pr.ts
+```
+
+#### Option B: Isolated CI Dependencies
+
+Create `.github/scripts/package.json`:
+
+```json
+{
+  "name": "ci-scripts",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "github-typescript-utils": "^0.2.0"
+  }
+}
+```
+
+Workflow setup:
+
+```yaml
+- uses: actions/setup-node@v4
+  with:
+    node-version: 22
+    cache: pnpm
+    cache-dependency-path: .github/scripts/pnpm-lock.yaml
+- run: pnpm install
+  working-directory: .github/scripts
+
+- uses: tkstang/github-typescript@v1
+  with:
+    working-directory: .github/scripts
+    ts-file: manage-pr.ts
+```
+
+### Script Example
+
 Create a TypeScript script that imports the utilities:
 
 ```ts

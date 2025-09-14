@@ -36,6 +36,7 @@ jobs:
 
   test:
     name: Test Suite
+    needs: lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -90,10 +91,53 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✅ **${TEST_COUNT} tests passed** with **${OVERALL_COVERAGE} overall coverage**" >> $GITHUB_STEP_SUMMARY
 
+  test-e2e:
+    name: E2E Test with github-typescript
+    needs: lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      deployments: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # Install scripts dependencies (including local utils via file:../../)
+      - name: Setup scripts dependencies
+        run: |
+          cd .github/scripts
+          pnpm install
+
+      # Run the example script through the published wrapper
+      - name: Run E2E test via github-typescript
+        uses: tkstang/github-typescript@v1
+        with:
+          working-directory: .github/scripts
+          ts-file: example.ts
+          node-version: "22"
+          args: |
+            {
+              "testMessage": "Hello E2E Test!",
+              "testLabels": ["e2e-test", "automated"],
+              "testBranch": "main"
+            }
+
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [lint, test]
+    needs: [lint, test, test-e2e]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
