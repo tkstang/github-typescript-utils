@@ -56,12 +56,14 @@ jobs:
         run: pnpm run test:run
 
       - name: Run tests with coverage
-        run: pnpm run test:coverage
+        run: |
+          pnpm run test:coverage > coverage_output.txt 2>&1
 
       - name: Coverage Summary
         run: |
-          # Run tests with coverage and capture output
-          pnpm run test:coverage > coverage_output.txt 2>&1
+          # Debug: Check what files exist
+          echo "Debug: Checking coverage files..."
+          ls -la coverage/ || echo "No coverage directory found"
 
           echo "## 📊 Test Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
