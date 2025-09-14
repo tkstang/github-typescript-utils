@@ -5,45 +5,79 @@
  * the github-typescript composite action.
  */
 
-// Export all types
-export type * from "./types.js";
-
+// Export advanced PR utilities
+export {
+  type AdvancedPRSearchOptions,
+  checkLabelConflicts,
+  findOpenPRsWithLabel,
+  findPRsWithLabels,
+  searchPullRequests,
+} from './advanced-pr-utils.js';
+// Export branch utilities
+export {
+  checkBranchExists,
+  getBranchProtection,
+  getDefaultBranch,
+  listAllBranches,
+} from './branch-utils.js';
 // Export comment utilities
 export {
   createStickyComment,
-  findCommentByIdentifier,
-  searchComments,
   deleteComment,
   deleteStickyComment,
-} from "./comments.js";
+  findCommentByIdentifier,
+  searchComments,
+} from './comments.js';
+// Export deployment utilities
+export {
+  createDeployment,
+  type Deployment,
+  type DeploymentStatus,
+  deleteDeployment,
+  getDeploymentStatuses,
+  listDeployments,
+  setDeploymentStatus,
+} from './deployment-utils.js';
 
+// Export input utilities
+export { getBranch, sanitizeInput, sanitizeInputs } from './input-utils.js';
 // Export pull request utilities
 export {
+  addLabelsToPullRequest,
   findPullRequestsByLabels,
   getPullRequest,
-  addLabelsToPullRequest,
-  removeLabelsFromPullRequest,
-  pullRequestHasLabels,
   getPullRequestFiles,
-} from "./pull-requests.js";
-
+  pullRequestHasLabels,
+  removeLabelsFromPullRequest,
+} from './pull-requests.js';
+// Export string utilities
+export {
+  camelToKebab,
+  camelToSnake,
+  capitalize,
+  kebabToCamel,
+  snakeToCamel,
+  toTitleCase,
+} from './string-utils.js';
+// Export all types
+export type * from './types.js';
 // Export general utilities
 export {
-  getRepoInfo,
-  getCurrentPullRequestNumber,
-  getCurrentIssueNumber,
-  isPullRequestContext,
-  isIssueContext,
-  getCurrentSHA,
-  getCurrentBranch,
-  getRepositoryUrl,
-  getIssueUrl,
-  getPullRequestUrl,
-  formatDate,
-  parseGitHubDate,
-  delay,
-  truncateText,
-  escapeMarkdown,
   codeBlock,
   createMarkdownTable,
-} from "./utils.js";
+  delay,
+  escapeMarkdown,
+  formatDate,
+  getCurrentBranch,
+  getCurrentIssueNumber,
+  getCurrentPullRequestNumber,
+  getCurrentSHA,
+  getIssueUrl,
+  getPullRequestUrl,
+  getRepoInfo,
+  getRepositoryUrl,
+  isIssueContext,
+  isPullRequestContext,
+  parseGitHubDate,
+  truncateText,
+} from './utils.js';

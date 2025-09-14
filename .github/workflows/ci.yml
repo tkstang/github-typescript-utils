@@ -16,8 +16,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -34,18 +32,135 @@ jobs:
       - name: Type check
         run: pnpm run type-check
 
-  build:
-    name: Build
-    runs-on: ubuntu-latest
+  test:
+    name: Test Suite
     needs: lint
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          version: 10
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run tests
+        run: pnpm run test:run
+
+      - name: Run tests with coverage
+        run: |
+          pnpm run test:coverage > coverage_output.txt 2>&1
+
+      - name: Coverage Summary
+        run: |
+          # Debug: Check what files exist
+          echo "Debug: Checking coverage files..."
+          ls -la coverage/ || echo "No coverage directory found"
+
+          echo "## 📊 Test Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Extract test results
+          TEST_COUNT=$(grep -o '[0-9]\+ passed' coverage_output.txt | head -1 | grep -o '[0-9]\+' || echo "0")
+
+          # Check if coverage file exists and extract coverage
+          if [ -f coverage/coverage-summary.json ]; then
+            OVERALL_COVERAGE=$(node -e "
+              const fs = require('fs');
+              const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+              console.log(coverage.total.statements.pct + '%');
+            ")
+
+            echo "| Metric | Coverage |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|----------|" >> $GITHUB_STEP_SUMMARY
+
+            # Add overall coverage summary
+            node -e "
+              const fs = require('fs');
+              const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+              const total = coverage.total;
+              console.log(\`| **Statements** | \${total.statements.pct}% (\${total.statements.covered}/\${total.statements.total}) |\`);
+              console.log(\`| **Branches** | \${total.branches.pct}% (\${total.branches.covered}/\${total.branches.total}) |\`);
+              console.log(\`| **Functions** | \${total.functions.pct}% (\${total.functions.covered}/\${total.functions.total}) |\`);
+              console.log(\`| **Lines** | \${total.lines.pct}% (\${total.lines.covered}/\${total.lines.total}) |\`);
+            " >> $GITHUB_STEP_SUMMARY
+          else
+            OVERALL_COVERAGE="N/A"
+            echo "Coverage data not available" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **${TEST_COUNT} tests passed** with **${OVERALL_COVERAGE} overall coverage**" >> $GITHUB_STEP_SUMMARY
+
+  test-e2e:
+    name: E2E Test with github-typescript
+    needs: lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      deployments: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # Install main package dependencies and build. These steps are only
+      # necessary because the example used for the e2e tewst is resolving
+      # utils via file:../../ to use the current local version of the package.
+      # Normally, the dependency would be the published version of the package.
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build package
+        run: pnpm run build
+
+      # Install scripts dependencies (including local utils via file:../../)
+      - name: Setup scripts dependencies
+        run: |
+          cd .github/scripts
+          pnpm install
+
+      # Run the example script through the published wrapper
+      - name: Run E2E test via github-typescript
+        uses: tkstang/github-typescript@v1
+        with:
+          working-directory: .github/scripts
+          ts-file: example.ts
+          node-version: "22"
+          args: |
+            {
+              "testMessage": "Hello E2E Test!",
+              "testLabels": ["e2e-test", "automated"],
+              "testBranch": "main"
+            }
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint, test, test-e2e]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -82,8 +197,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -99,4 +212,4 @@ jobs:
         run: pnpm run build
 
       - name: Publish dry run
-        run: pnpm publish --dry-run
+        run: pnpm publish --dry-run --no-git-checks

@@ -1,5 +1,5 @@
-import type { getOctokit } from "@actions/github";
-import type * as core from "@actions/core";
+import type * as core from '@actions/core';
+import type { getOctokit } from '@actions/github';
 
 /**
  * Core context types provided by github-typescript wrapper
@@ -7,7 +7,7 @@ import type * as core from "@actions/core";
 export type GitHubContext = {
   core: typeof core;
   github: ReturnType<typeof getOctokit>;
-  context: typeof import("@actions/github").context;
+  context: typeof import('@actions/github').context;
 };
 
 /**
@@ -63,7 +63,7 @@ export type PullRequest = {
   number: number;
   title: string;
   body: string | null;
-  state: "open" | "closed";
+  state: 'open' | 'closed';
   draft: boolean;
   user: {
     login: string;
@@ -158,7 +158,7 @@ export type PullRequestSearchOptions = {
    * PR state to filter by
    * @default 'open'
    */
-  state?: "open" | "closed" | "all";
+  state?: 'open' | 'closed' | 'all';
   /**
    * Maximum number of PRs to return
    * @default 30
@@ -168,10 +168,10 @@ export type PullRequestSearchOptions = {
    * Sort order
    * @default 'created'
    */
-  sort?: "created" | "updated" | "popularity" | "long-running";
+  sort?: 'created' | 'updated' | 'popularity' | 'long-running';
   /**
    * Sort direction
    * @default 'desc'
    */
-  direction?: "asc" | "desc";
+  direction?: 'asc' | 'desc';
 };

@@ -1,10 +1,10 @@
 import type {
-  GitHubContext,
-  RepoInfo,
-  IssueComment,
-  StickyCommentOptions,
   CommentSearchOptions,
-} from "./types.js";
+  GitHubContext,
+  IssueComment,
+  RepoInfo,
+  StickyCommentOptions,
+} from './types.js';
 
 /**
  * Creates or updates a "sticky" comment on an issue or pull request.
@@ -38,16 +38,13 @@ export async function createStickyComment({
     });
 
     if (existingComment) {
-      ctx.core.info(
-        `Updating existing sticky comment ${identifier} (ID: ${existingComment.id})`
-      );
+      ctx.core.info(`Updating existing sticky comment ${identifier} (ID: ${existingComment.id})`);
 
-      const { data: updatedComment } =
-        await ctx.github.rest.issues.updateComment({
-          ...repo,
-          comment_id: existingComment.id,
-          body: fullBody,
-        });
+      const { data: updatedComment } = await ctx.github.rest.issues.updateComment({
+        ...repo,
+        comment_id: existingComment.id,
+        body: fullBody,
+      });
 
       return updatedComment as IssueComment;
     }
@@ -88,9 +85,7 @@ export async function findCommentByIdentifier({
   });
 
   // Find comment containing our identifier
-  const matchingComment = comments.find((comment: any) =>
-    comment.body?.includes(identifierMarker)
-  );
+  const matchingComment = comments.find((comment) => comment.body?.includes(identifierMarker));
 
   return (matchingComment as IssueComment) || null;
 }
@@ -109,13 +104,7 @@ export async function searchComments({
   issueNumber: number;
   options: CommentSearchOptions;
 }): Promise<IssueComment[]> {
-  const {
-    bodyContains,
-    author,
-    createdAfter,
-    createdBefore,
-    limit = 100,
-  } = options;
+  const { bodyContains, author, createdAfter, createdBefore, limit = 100 } = options;
 
   const { data: allComments } = await ctx.github.rest.issues.listComments({
     ...repo,
@@ -134,9 +123,7 @@ export async function searchComments({
 
   // Filter by author
   if (author) {
-    filteredComments = filteredComments.filter(
-      (comment) => comment.user?.login === author
-    );
+    filteredComments = filteredComments.filter((comment) => comment.user?.login === author);
   }
 
   // Filter by creation date

@@ -1,0 +1,8 @@
+{
+  "name": "@tkstang/ci-scripts",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "github-typescript-utils": "file:../../"
+  }
+}

@@ -6,12 +6,27 @@ This package provides a comprehensive set of TypeScript utilities for interactin
 
 ## Features
 
-- ✅ **Sticky Comments** - Create and manage persistent, updatable comments
-- ✅ **Pull Request Utilities** - Find, label, and manage pull requests
-- ✅ **Comment Search** - Search and filter issue/PR comments
+### 📋 Complete Function Reference
+
+| Category                  | Functions                                                                                                                                                                                                    | Description                                                         |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| **💬 Comments**           | `createStickyComment`, `findCommentByIdentifier`, `searchComments`, `deleteComment`, `deleteStickyComment`                                                                                                   | Create, find, search, and manage issue/PR comments                  |
+| **🔀 Pull Requests**      | `findPullRequestsByLabels`, `getPullRequest`, `addLabelsToPullRequest`, `removeLabelsFromPullRequest`, `pullRequestHasLabels`, `getPullRequestFiles`                                                         | Find, manage, and interact with pull requests                       |
+| **🔍 Advanced PR Search** | `findPRsWithLabels`, `searchPullRequests`, `findOpenPRsWithLabel`, `checkLabelConflicts`                                                                                                                     | Advanced pull request search and label conflict detection           |
+| **🌿 Branch Management**  | `checkBranchExists`, `listAllBranches`, `getBranchProtection`, `getDefaultBranch`                                                                                                                            | Branch existence, listing, and protection management                |
+| **🚀 Deployments**        | `listDeployments`, `getDeploymentStatuses`, `setDeploymentStatus`, `deleteDeployment`, `createDeployment`                                                                                                    | Deployment lifecycle management                                     |
+| **🔧 Context & Utils**    | `getRepoInfo`, `getCurrentPullRequestNumber`, `getCurrentIssueNumber`, `isPullRequestContext`, `isIssueContext`, `getCurrentSHA`, `getCurrentBranch`, `getRepositoryUrl`, `getIssueUrl`, `getPullRequestUrl` | GitHub Actions context extraction and URL helpers                   |
+| **📝 Text & Formatting**  | `escapeMarkdown`, `codeBlock`, `createMarkdownTable`, `truncateText`, `formatDate`, `parseGitHubDate`, `delay`                                                                                               | Text formatting, markdown utilities, and date handling              |
+| **🔤 String Utilities**   | `snakeToCamel`, `camelToSnake`, `kebabToCamel`, `camelToKebab`, `capitalize`, `toTitleCase`                                                                                                                  | String case conversion and text transformation                      |
+| **⚙️ Input Processing**   | `sanitizeInput`, `sanitizeInputs`, `getBranch`                                                                                                                                                               | Input sanitization and branch extraction from various GitHub events |
+
+### ✨ Key Features
+
 - ✅ **Type Safety** - Full TypeScript support with comprehensive type definitions
-- ✅ **Context Helpers** - Extract repository and event information from GitHub Actions context
-- ✅ **Markdown Utilities** - Format and escape content for GitHub markdown
+- ✅ **Universal Compatibility** - Works with all GitHub event types and contexts
+- ✅ **Comprehensive Testing** - 110+ tests with 94%+ code coverage
+- ✅ **GitHub API Optimized** - Efficient API usage with proper error handling and pagination support
+- ✅ **Developer Friendly** - Intuitive APIs with TypeScript intellisense and JSDoc documentation
 
 ---
 
@@ -36,6 +51,70 @@ yarn add github-typescript-utils
 ---
 
 ## Usage with github-typescript
+
+### Dependency Setup
+
+For `esbuild` to resolve `github-typescript-utils`, you need the package available in `node_modules`. Choose one approach:
+
+#### Option A: Root Dependencies (Simplest)
+
+Add to your repository's root `package.json`:
+
+```json
+{
+  "dependencies": {
+    "github-typescript-utils": "^0.2.0"
+  }
+}
+```
+
+Workflow setup:
+
+```yaml
+- uses: actions/setup-node@v4
+  with:
+    node-version: 22
+    cache: pnpm
+- run: pnpm install
+
+- uses: tkstang/github-typescript@v1
+  with:
+    ts-file: .github/scripts/manage-pr.ts
+```
+
+#### Option B: Isolated CI Dependencies
+
+Create `.github/scripts/package.json`:
+
+```json
+{
+  "name": "ci-scripts",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "github-typescript-utils": "^0.2.0"
+  }
+}
+```
+
+Workflow setup:
+
+```yaml
+- uses: actions/setup-node@v4
+  with:
+    node-version: 22
+    cache: pnpm
+    cache-dependency-path: .github/scripts/pnpm-lock.yaml
+- run: pnpm install
+  working-directory: .github/scripts
+
+- uses: tkstang/github-typescript@v1
+  with:
+    working-directory: .github/scripts
+    ts-file: manage-pr.ts
+```
+
+### Script Example
 
 Create a TypeScript script that imports the utilities:
 
@@ -278,6 +357,180 @@ const table = createMarkdownTable(
 const short = truncateText("Very long text...", 50);
 ```
 
+### String Utilities
+
+#### Case Conversion
+
+```ts
+import {
+  snakeToCamel,
+  camelToSnake,
+  kebabToCamel,
+  camelToKebab,
+  capitalize,
+  toTitleCase,
+} from "github-typescript-utils";
+
+// Convert between naming conventions
+const camelCase = snakeToCamel("hello_world"); // "helloWorld"
+const snakeCase = camelToSnake("helloWorld"); // "hello_world"
+const kebabCase = camelToKebab("helloWorld"); // "hello-world"
+const camelFromKebab = kebabToCamel("hello-world"); // "helloWorld"
+
+// Text transformation
+const capitalized = capitalize("hello"); // "Hello"
+const titleCase = toTitleCase("hello world"); // "Hello World"
+```
+
+### Branch Management
+
+#### Branch Operations
+
+```ts
+import {
+  checkBranchExists,
+  listAllBranches,
+  getBranchProtection,
+  getDefaultBranch,
+} from "github-typescript-utils";
+
+// Check if branch exists
+const exists = await checkBranchExists({
+  ctx: { core, github, context },
+  repo,
+  branch: "feature-branch",
+});
+
+// List all branches
+const branches = await listAllBranches({
+  ctx: { core, github, context },
+  repo,
+  limit: 50,
+});
+
+// Get branch protection rules
+const protection = await getBranchProtection({
+  ctx: { core, github, context },
+  repo,
+  branch: "main",
+});
+
+// Get default branch
+const defaultBranch = await getDefaultBranch({
+  ctx: { core, github, context },
+  repo,
+});
+```
+
+### Deployment Management
+
+#### Deployment Lifecycle
+
+```ts
+import {
+  listDeployments,
+  createDeployment,
+  setDeploymentStatus,
+  getDeploymentStatuses,
+  deleteDeployment,
+} from "github-typescript-utils";
+
+// Create a deployment
+const deployment = await createDeployment({
+  ctx: { core, github, context },
+  repo,
+  ref: "main",
+  environment: "production",
+  description: "Deploy v1.0.0",
+});
+
+// Set deployment status
+await setDeploymentStatus({
+  ctx: { core, github, context },
+  repo,
+  deploymentId: deployment.id,
+  state: "success",
+  description: "Deployment completed successfully",
+});
+
+// List deployments
+const deployments = await listDeployments({
+  ctx: { core, github, context },
+  repo,
+  environment: "production",
+});
+```
+
+### Advanced PR Search
+
+#### Enhanced PR Operations
+
+```ts
+import {
+  findPRsWithLabels,
+  searchPullRequests,
+  checkLabelConflicts,
+  findOpenPRsWithLabel,
+} from "github-typescript-utils";
+
+// Find PRs with multiple labels
+const prs = await findPRsWithLabels({
+  ctx: { core, github, context },
+  repo,
+  labels: ["bug", "urgent"],
+  excludePRs: [123], // Exclude specific PR numbers
+});
+
+// Advanced PR search
+const searchResults = await searchPullRequests({
+  ctx: { core, github, context },
+  repo,
+  options: {
+    labels: ["feature"],
+    author: "dependabot[bot]",
+    state: "open",
+  },
+});
+
+// Check for label conflicts
+const conflict = await checkLabelConflicts({
+  ctx: { core, github, context },
+  repo,
+  prNumber: 123,
+  label: "sync-branch: main",
+});
+
+if (conflict.hasConflict) {
+  core.warning(`Label conflict with PR #${conflict.conflictingPR?.number}`);
+}
+```
+
+### Input Processing
+
+#### Input Sanitization and Branch Extraction
+
+```ts
+import {
+  sanitizeInput,
+  sanitizeInputs,
+  getBranch,
+} from "github-typescript-utils";
+
+// Remove quotes from workflow inputs
+const cleanInput = sanitizeInput('"quoted-value"'); // "quoted-value"
+
+// Sanitize all string properties in an object
+const cleanInputs = sanitizeInputs({
+  name: '"John"',
+  age: 30,
+  title: '"Developer"',
+}); // { name: "John", age: 30, title: "Developer" }
+
+// Extract branch from any GitHub event
+const branch = getBranch({ core, github, context });
+// Works with: pull_request, push, workflow_run, etc.
+```
+
 ---
 
 ## Type Definitions
@@ -286,13 +539,24 @@ The package exports comprehensive TypeScript types:
 
 ```ts
 import type {
+  // Core types
   GitHubContext,
   RepoInfo,
   PullRequest,
   IssueComment,
+
+  // Comment types
   StickyCommentOptions,
   CommentSearchOptions,
+
+  // Pull request types
   PullRequestSearchOptions,
+  PullRequestFile,
+  AdvancedPRSearchOptions,
+
+  // Deployment types
+  Deployment,
+  DeploymentStatus,
 } from "github-typescript-utils";
 ```
 
