@@ -141,7 +141,8 @@ jobs:
       - name: Run E2E test via github-typescript
         uses: tkstang/github-typescript@v1
         with:
-          ts-file: .github/scripts/example.ts
+          working-directory: .github/scripts
+          ts-file: example.ts
           node-version: "22"
           args: |
             {
