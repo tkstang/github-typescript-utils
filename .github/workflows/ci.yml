@@ -34,10 +34,66 @@ jobs:
       - name: Type check
         run: pnpm run type-check
 
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run tests
+        run: pnpm run test:run
+
+      - name: Run tests with coverage
+        run: pnpm run test:coverage
+
+      - name: Coverage Summary
+        run: |
+          # Run tests with coverage and capture output
+          TEST_OUTPUT=$(pnpm run test:coverage 2>&1)
+
+          echo "## 📊 Test Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Extract test results
+          TEST_COUNT=$(echo "$TEST_OUTPUT" | grep -o '[0-9]\+ passed' | head -1 | grep -o '[0-9]\+')
+          OVERALL_COVERAGE=$(echo "$TEST_OUTPUT" | grep "All files" | awk '{print $3}')
+
+          # Add coverage table
+          echo "| File | Statements | Branches | Functions | Lines |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------------|----------|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+
+          # Parse coverage and add to summary
+          echo "$TEST_OUTPUT" | grep -E "^\s*(All files|[a-z-]+\.ts)" | while read line; do
+            if [[ $line == *"All files"* ]]; then
+              echo "| **Overall** | $(echo $line | awk '{print $3}') | $(echo $line | awk '{print $4}') | $(echo $line | awk '{print $5}') | $(echo $line | awk '{print $6}') |" >> $GITHUB_STEP_SUMMARY
+            elif [[ $line == *.ts* ]]; then
+              filename=$(echo $line | awk '{print $1}')
+              echo "| $filename | $(echo $line | awk '{print $3}') | $(echo $line | awk '{print $4}') | $(echo $line | awk '{print $5}') | $(echo $line | awk '{print $6}') |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **${TEST_COUNT} tests passed** with **${OVERALL_COVERAGE} overall coverage**" >> $GITHUB_STEP_SUMMARY
+
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: lint
+    needs: [lint, test]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
