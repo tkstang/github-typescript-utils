@@ -1,6 +1,6 @@
 {
   "name": "github-typescript-utils",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "TypeScript utilities for GitHub Actions workflows - REST API, Octokit, context helpers, and common workflow functions",
   "type": "module",
   "main": "./dist/index.js",
