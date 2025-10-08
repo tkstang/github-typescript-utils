@@ -1,6 +1,6 @@
 {
   "name": "github-typescript-utils",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "TypeScript utilities for GitHub Actions workflows - REST API, Octokit, context helpers, and common workflow functions",
   "type": "module",
   "main": "./dist/index.js",
@@ -72,7 +72,6 @@
   },
   "packageManager": "pnpm@10.13.1",
   "engines": {
-    "node": ">=22.17.0",
-    "pnpm": ">=10.13.1"
+    "node": ">=20.0.0"
   }
 }
