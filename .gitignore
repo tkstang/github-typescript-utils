@@ -44,3 +44,6 @@ coverage/
 
 # TypeScript cache
 *.tsbuildinfo
+
+# Locally prepared release archive and isolated consumer
+.release/

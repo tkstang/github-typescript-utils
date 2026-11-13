@@ -15,13 +15,21 @@
                 "selector": {
                   "kind": "objectLiteralProperty"
                 },
-                "formats": ["camelCase", "snake_case", "CONSTANT_CASE"]
+                "formats": [
+                  "camelCase",
+                  "snake_case",
+                  "CONSTANT_CASE"
+                ]
               },
               {
                 "selector": {
                   "kind": "typeProperty"
                 },
-                "formats": ["camelCase", "snake_case", "CONSTANT_CASE"]
+                "formats": [
+                  "camelCase",
+                  "snake_case",
+                  "CONSTANT_CASE"
+                ]
               }
             ]
           }
@@ -56,7 +64,15 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["src/**/*.ts", "src/**/*.js", "*.json", "*.md"]
+    "includes": [
+      "src/**/*.ts",
+      "src/**/*.js",
+      "*.json",
+      "*.md",
+      "scripts/**/*.ts",
+      "scripts/**/*.mjs",
+      "scripts/**/*.json"
+    ]
   },
   "assist": {
     "actions": {

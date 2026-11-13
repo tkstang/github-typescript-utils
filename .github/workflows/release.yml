@@ -6,53 +6,77 @@ on:
       - "v*"
 
 permissions:
-  contents: write  # Need write access to create releases
-  id-token: write
+  contents: read
 
 jobs:
   publish:
     name: Publish to NPM
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout tagged candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: pnpm
           registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Run checks
+      - name: Validate tag, checks and exact package archive
+        run: pnpm run release:prepare
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+
+      - name: Setup minimum consumer Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20.0.0
+
+      - name: Verify installed archive on the minimum consumer runtime
+        run: node .release/consumer/check.mjs
+
+      - name: Restore publishing Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          registry-url: "https://registry.npmjs.org"
+
+      # release:prepare already ran tests/build and validated this archive.
+      # Suppress lifecycle rebuilds so publication uses the same bytes.
+      - name: Publish validated archive
         run: |
-          pnpm run check
-          pnpm run type-check
-
-      - name: Build
-        run: pnpm run build
-
-      - name: Publish
-        run: pnpm publish --no-git-checks
+          sha256sum --check .release/package.sha256
+          pnpm publish .release/package.tgz --ignore-scripts --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: publish  # Wait for npm publish to succeed
+    needs: publish
+    permissions:
+      contents: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout tagged candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}

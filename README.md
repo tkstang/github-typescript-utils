@@ -670,6 +670,43 @@ export default async function run({ core, github, context }) {
 5. Test your changes
 6. Submit a pull request
 
+## Release preparation
+
+Version 0.2.4 is prepared as a patch release. Use current Node 22 from `.nvmrc`
+and the pinned pnpm 10.13.1. The package's consumer minimum remains Node 20;
+release helpers use native erasable TypeScript on Node 22.
+
+```bash
+pnpm install --frozen-lockfile
+RELEASE_TAG=v0.2.4 pnpm run release:prepare
+```
+
+This command rejects partial, prerelease or mismatched tags, runs Biome, both
+TypeScript checks and unit tests, then clean-builds and packs the package. It
+installs the exact archive into an isolated consumer with the locked development
+versions of the declared peers, checks its public declarations under NodeNext,
+and exercises public imports without a source alias. It does not publish.
+
+`pnpm run release:pack` performs the build/archive/consumer checks without a tag.
+It replaces ignored `.release/` output. CI also executes
+`.release/consumer/check.mjs` on Node 20.0.0 to check the declared consumer floor.
+The existing broad `src/` and test-support package payload is retained; changing
+that distribution contract is separate work.
+
+The release workflow checks out the triggering event SHA and runs the full
+preparation gate at that candidate before publishing. It then verifies
+`.release/package.sha256` and publishes `.release/package.tgz` with
+`--ignore-scripts`, so `prepublishOnly` cannot rerun the completed checks/build and
+rebuild different bytes. The source-publish lifecycle hook remains available for
+other callers, but the workflow publishes the validated tarball. GitHub release
+creation waits for npm publication to succeed.
+
+No tag or package publication is authorized by preparing or merging these changes.
+Before a separately approved release, verify registry access for the existing
+`NPM_TOKEN` secret and the repository/workflow permissions. Account-side credentials
+and npm trust were not inspected. The retained `id-token: write` permission alone
+does not establish trusted publishing or justify removing the token.
+
 ## License
 
 MIT - see [LICENSE](LICENSE) file for details.

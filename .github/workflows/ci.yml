@@ -193,23 +193,33 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: pnpm
           registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm run build
+      - name: Validate exact package archive
+        run: pnpm run release:pack
 
-      - name: Publish dry run
-        run: pnpm publish --dry-run --no-git-checks
+      - name: Setup minimum consumer Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20.0.0
+
+      - name: Verify installed archive on the minimum consumer runtime
+        run: node .release/consumer/check.mjs
+
+      - name: Publish dry run of the validated archive
+        run: |
+          sha256sum --check .release/package.sha256
+          pnpm publish .release/package.tgz --dry-run --ignore-scripts --no-git-checks
