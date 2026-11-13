@@ -62,7 +62,7 @@ export async function createStickyComment({
 }
 
 /**
- * Finds a sticky comment by its identifier
+ * Finds the first sticky comment by its identifier across all comment pages.
  */
 export async function findCommentByIdentifier({
   ctx,
@@ -77,17 +77,23 @@ export async function findCommentByIdentifier({
 }): Promise<IssueComment | null> {
   const identifierMarker = `<!-- sticky-comment-id: ${identifier} -->`;
 
-  // Get all comments for the issue/PR
-  const { data: comments } = await ctx.github.rest.issues.listComments({
-    ...repo,
-    issue_number: issueNumber,
-    per_page: 100,
-  });
+  for (let page = 1; ; page += 1) {
+    const { data: comments } = await ctx.github.rest.issues.listComments({
+      ...repo,
+      issue_number: issueNumber,
+      per_page: 100,
+      page,
+    });
 
-  // Find comment containing our identifier
-  const matchingComment = comments.find((comment) => comment.body?.includes(identifierMarker));
+    const matchingComment = comments.find((comment) => comment.body?.includes(identifierMarker));
+    if (matchingComment) {
+      return matchingComment as IssueComment;
+    }
 
-  return (matchingComment as IssueComment) || null;
+    if (comments.length < 100) {
+      return null;
+    }
+  }
 }
 
 /**
