@@ -25,7 +25,7 @@ This package provides a comprehensive set of TypeScript utilities for GitHub Act
 - ✅ **Type Safety** - Full TypeScript support with comprehensive type definitions
 - ✅ **Universal Compatibility** - Works with all GitHub event types and contexts
 - ✅ **Comprehensive Testing** - 110+ tests with 94%+ code coverage
-- ✅ **GitHub API Optimized** - Efficient API usage with proper error handling and pagination support
+- ✅ **GitHub API Optimized** - Efficient API usage with error handling and paginated sticky-comment lookup
 - ✅ **Developer Friendly** - Intuitive APIs with TypeScript intellisense and JSDoc documentation
 
 ---
@@ -209,13 +209,14 @@ Finds the first comment containing the sticky identifier marker, checking succes
 pages of issue or pull request comments in API order. Returns `null` only after
 all pages have been searched. API failures propagate to the caller.
 
-`createStickyComment` and `deleteStickyComment` use this lookup, so they can update
-or remove an existing sticky comment after the first 100 comments. Matching remains
-identifier-only, without filtering the comment author.
+`createStickyComment` and `deleteStickyComment` use this lookup to find sticky
+comments on any page. Matching uses the identifier only and does not filter by
+comment author.
 
 #### `searchComments(options)`
 
-Search for comments based on various criteria:
+Search for comments based on various criteria. This helper filters one API page
+of up to 100 comments; it does not traverse subsequent pages:
 
 ```ts
 const comments = await searchComments({
