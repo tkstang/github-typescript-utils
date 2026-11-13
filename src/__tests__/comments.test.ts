@@ -149,6 +149,107 @@ describe('findCommentByIdentifier', () => {
     expect(result).toEqual(stickyComment);
   });
 
+  it('should find a sticky comment after the first page', async () => {
+    const firstPage = Array.from({ length: 100 }, (_, index) => ({
+      id: index + 1,
+      body: 'Regular comment',
+    }));
+    const stickyComment = {
+      id: 101,
+      body: '<!-- sticky-comment-id: test-sticky -->\nPrevious status',
+    };
+    const listComments = vi
+      .fn()
+      .mockResolvedValueOnce({ data: firstPage })
+      .mockResolvedValueOnce({ data: [stickyComment] });
+    const ctx = createSimpleMockContext({ rest: { issues: { listComments } } });
+
+    const result = await findCommentByIdentifier({
+      ctx,
+      repo: { owner: 'test', repo: 'test-repo' },
+      issueNumber: 1,
+      identifier: 'test-sticky',
+    });
+
+    expect(result).toEqual(stickyComment);
+    expect(listComments).toHaveBeenNthCalledWith(2, {
+      owner: 'test',
+      repo: 'test-repo',
+      issue_number: 1,
+      per_page: 100,
+      page: 2,
+    });
+  });
+
+  it('should return null after exhausting full pages without a match', async () => {
+    const firstPage = Array.from({ length: 100 }, (_, index) => ({
+      id: index + 1,
+      body: 'Regular comment',
+    }));
+    const listComments = vi
+      .fn()
+      .mockResolvedValueOnce({ data: firstPage })
+      .mockResolvedValueOnce({ data: [] });
+    const ctx = createSimpleMockContext({ rest: { issues: { listComments } } });
+
+    const result = await findCommentByIdentifier({
+      ctx,
+      repo: { owner: 'test', repo: 'test-repo' },
+      issueNumber: 1,
+      identifier: 'missing',
+    });
+
+    expect(result).toBeNull();
+    expect(listComments).toHaveBeenCalledTimes(2);
+  });
+
+  it('should return the first match without requesting later pages', async () => {
+    const firstMatch = { id: 1, body: '<!-- sticky-comment-id: test-sticky -->' };
+    const secondMatch = { id: 2, body: '<!-- sticky-comment-id: test-sticky -->' };
+    const firstPage = [
+      firstMatch,
+      secondMatch,
+      ...Array.from({ length: 98 }, (_, index) => ({ id: index + 3 })),
+    ];
+    const listComments = vi
+      .fn()
+      .mockResolvedValueOnce({ data: firstPage })
+      .mockRejectedValueOnce(new Error('No later page should be requested'));
+    const ctx = createSimpleMockContext({ rest: { issues: { listComments } } });
+
+    const result = await findCommentByIdentifier({
+      ctx,
+      repo: { owner: 'test', repo: 'test-repo' },
+      issueNumber: 1,
+      identifier: 'test-sticky',
+    });
+
+    expect(result).toEqual(firstMatch);
+    expect(listComments).toHaveBeenCalledTimes(1);
+  });
+
+  it('should propagate a later-page API failure instead of reporting no match', async () => {
+    const firstPage = Array.from({ length: 100 }, (_, index) => ({
+      id: index + 1,
+      body: 'Regular comment',
+    }));
+    const failure = Object.assign(new Error('API unavailable'), { status: 503 });
+    const listComments = vi
+      .fn()
+      .mockResolvedValueOnce({ data: firstPage })
+      .mockRejectedValueOnce(failure);
+    const ctx = createSimpleMockContext({ rest: { issues: { listComments } } });
+
+    await expect(
+      findCommentByIdentifier({
+        ctx,
+        repo: { owner: 'test', repo: 'test-repo' },
+        issueNumber: 1,
+        identifier: 'test-sticky',
+      })
+    ).rejects.toBe(failure);
+  });
+
   it('should return null when sticky comment not found', async () => {
     const mockGithub = {
       rest: {

@@ -203,6 +203,16 @@ await createStickyComment({
 });
 ```
 
+#### `findCommentByIdentifier(options)`
+
+Finds the first comment containing the sticky identifier marker, checking successive
+pages of issue or pull request comments in API order. Returns `null` only after
+all pages have been searched. API failures propagate to the caller.
+
+`createStickyComment` and `deleteStickyComment` use this lookup, so they can update
+or remove an existing sticky comment after the first 100 comments. Matching remains
+identifier-only, without filtering the comment author.
+
 #### `searchComments(options)`
 
 Search for comments based on various criteria:
