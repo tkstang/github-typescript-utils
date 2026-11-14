@@ -1,6 +1,6 @@
 {
   "name": "github-typescript-utils",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "TypeScript utilities for GitHub Actions workflows - REST API, Octokit, context helpers, and common workflow functions",
   "type": "module",
   "main": "./dist/index.js",
@@ -52,10 +52,13 @@
     "lint:fix": "biome lint --write src/",
     "format": "biome format src/",
     "format:fix": "biome format --write src/",
-    "check": "biome check src/",
-    "check:fix": "biome check --write src/",
-    "type-check": "tsc --noEmit",
-    "prepublishOnly": "pnpm run clean && pnpm run test:run && pnpm run build"
+    "check": "biome check src/ scripts/",
+    "check:fix": "biome check --write src/ scripts/",
+    "type-check": "tsc --noEmit && tsc -p scripts/tsconfig.json",
+    "prepublishOnly": "pnpm run clean && pnpm run test:run && pnpm run build",
+    "release:check": "node scripts/release/validate-tag.ts",
+    "release:pack": "pnpm run clean && pnpm run build && node scripts/release/verify-package.ts",
+    "release:prepare": "pnpm run release:check && pnpm run check && pnpm run type-check && pnpm run test:run && pnpm run release:pack"
   },
   "peerDependencies": {
     "@actions/core": "^1.10.0",

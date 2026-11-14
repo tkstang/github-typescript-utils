@@ -670,6 +670,34 @@ export default async function run({ core, github, context }) {
 5. Test your changes
 6. Submit a pull request
 
+## Release preparation
+
+Use current Node 22 from `.nvmrc` and pnpm 10.13.1. Consumers support Node >=20;
+release helpers require current Node 22.
+
+```bash
+pnpm install --frozen-lockfile
+RELEASE_TAG=v0.2.4 pnpm run release:prepare
+```
+
+This validates the version, runs checks/tests and validates the built archive's
+installed imports and declarations. It does not publish. Use
+`pnpm run release:pack` for archive checks without a tag.
+
+Before a separately approved release:
+
+1. Verify registry access for `NPM_TOKEN` and workflow permissions. Do not tag
+   until access is confirmed. `id-token: write` alone does not configure npm trust.
+2. Push an exact stable `vX.Y.Z` tag at the approved merged `main` commit,
+   matching `package.json`. Partial and prerelease tags are rejected.
+3. Check the release job. It validates the candidate and Node 20 consumer, verifies
+   the archive checksum, then publishes that exact tarball without rebuilding.
+   GitHub release creation follows successful npm publication.
+
+Use the release job's archive checksum when verifying publication; local and
+hosted archives can differ. Preparation and merging do not authorize publication,
+tag changes or credential changes. Keep `NPM_TOKEN` until a replacement is verified.
+
 ## License
 
 MIT - see [LICENSE](LICENSE) file for details.
