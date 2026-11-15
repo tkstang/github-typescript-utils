@@ -682,7 +682,8 @@ RELEASE_TAG=v0.2.4 pnpm run release:prepare
 
 This validates the version, runs checks/tests and validates the built archive's
 installed imports and declarations. It does not publish. Use
-`pnpm run release:pack` for archive checks without a tag.
+`pnpm run release:pack` for archive checks without a tag. PR dry runs allow an
+already-published stable version; real releases retain npm's version guards.
 
 Before a separately approved release:
 

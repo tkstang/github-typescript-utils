@@ -20,3 +20,6 @@ only the consumer smoke runs on Node 20. Tags, publication and credential change
 need explicit approval. npm publication uses OIDC from `release.yml` on GitHub-hosted
 runners with npm 11.20.0. Keep its filename and environment aligned with the npm
 trusted publisher; do not add a publish token. A dry run does not prove npm trust.
+
+PR archive dry runs use `--force` to allow existing versions; `release:pack` still
+validates stable SemVer. Never pass `--force` to real publication.
