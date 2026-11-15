@@ -54,14 +54,15 @@ jobs:
           node-version: 22
           registry-url: "https://registry.npmjs.org"
 
+      - name: Use npm with trusted-publishing support
+        run: npm install --global npm@11.20.0
+
       # release:prepare already ran tests/build and validated this archive.
       # Suppress lifecycle rebuilds so publication uses the same bytes.
       - name: Publish validated archive
         run: |
           sha256sum --check .release/package.sha256
-          pnpm publish .release/package.tgz --ignore-scripts --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          npm publish .release/package.tgz --ignore-scripts --access public
 
   create-release:
     name: Create GitHub Release

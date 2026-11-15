@@ -17,5 +17,6 @@ Never hand-edit `dist/` or `.release/`. Preserve the existing package payload.
 Follow the [README release procedure](README.md#release-preparation); publish the
 validated tarball without rebuilding. Release helpers require current Node 22;
 only the consumer smoke runs on Node 20. Tags, publication and credential changes
-need explicit approval. Verify registry access before tagging; retain `NPM_TOKEN`
-until a replacement is verified.
+need explicit approval. npm publication uses OIDC from `release.yml` on GitHub-hosted
+runners with npm 11.20.0. Keep its filename and environment aligned with the npm
+trusted publisher; do not add a publish token. A dry run does not prove npm trust.
