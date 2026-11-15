@@ -682,21 +682,28 @@ RELEASE_TAG=v0.2.4 pnpm run release:prepare
 
 This validates the version, runs checks/tests and validates the built archive's
 installed imports and declarations. It does not publish. Use
-`pnpm run release:pack` for archive checks without a tag.
+`pnpm run release:pack` for archive checks without a tag. PR dry runs allow an
+already-published stable version; real releases retain npm's version guards.
 
 Before a separately approved release:
 
-1. Verify registry access for `NPM_TOKEN` and workflow permissions. Do not tag
-   until access is confirmed. `id-token: write` alone does not configure npm trust.
+1. Configure the package's [npm trusted publisher](https://docs.npmjs.com/trusted-publishers/):
+   GitHub Actions, user `tkstang`, repository `github-typescript-utils`, workflow
+   filename `release.yml`, no environment, and allow `npm publish`. The workflow's
+   display name is `Release`; npm requires the filename. Complete the first publish
+   within two days of creating the configuration, before it expires.
 2. Push an exact stable `vX.Y.Z` tag at the approved merged `main` commit,
    matching `package.json`. Partial and prerelease tags are rejected.
 3. Check the release job. It validates the candidate and Node 20 consumer, verifies
-   the archive checksum, then publishes that exact tarball without rebuilding.
-   GitHub release creation follows successful npm publication.
+   the archive checksum, then uses npm 11.20.0 and GitHub OIDC to publish that exact
+   tarball without rebuilding or an npm token. GitHub release creation follows
+   successful npm publication.
 
 Use the release job's archive checksum when verifying publication; local and
 hosted archives can differ. Preparation and merging do not authorize publication,
-tag changes or credential changes. Keep `NPM_TOKEN` until a replacement is verified.
+tag changes or account settings changes. A dry run cannot verify the npm trust
+binding; the first successful OIDC publication does. Retire unused publish tokens
+only after that succeeds.
 
 ## License
 

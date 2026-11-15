@@ -225,7 +225,12 @@ jobs:
           node-version: 22
           registry-url: "https://registry.npmjs.org"
 
+      - name: Use npm with trusted-publishing support
+        run: npm install --global npm@11.20.0
+
+      # PRs validate the archive even when its stable version is already published.
+      # Only this dry run skips npm's registry-version checks; releases never force.
       - name: Publish dry run of the validated archive
         run: |
           sha256sum --check .release/package.sha256
-          pnpm publish .release/package.tgz --dry-run --ignore-scripts --no-git-checks
+          npm publish .release/package.tgz --dry-run --force --ignore-scripts --access public
